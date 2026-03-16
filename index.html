@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>AI 论文互动实验室 | 资深博主专项版</title>
+    <meta name="description" content="在这里，复杂的 AI 论文不再是天书。一点即看的交互式原理解析。">
+    <meta property="og:title" content="AI 视觉感官实验室：看懂模型如何思考">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1000">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap');
+        body { background: #020617; font-family: 'Space Grotesk', sans-serif; }
+        .glass-card { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.5); }
+        .accent-gradient { background: linear-gradient(90deg, #fbbf24, #f59e0b, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .scan-line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: rgba(234, 179, 8, 0.5); box-shadow: 0 0 15px #eab308; animation: scan 3s linear infinite; }
+        @keyframes scan { 0% { top: 0%; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+    </style>
+</head>
+<body class="text-slate-200">
+
+    <div class="max-w-5xl mx-auto px-6 py-16">
+        <header class="mb-16">
+            <div class="inline-block px-4 py-1 rounded-full border border-yellow-500/30 text-yellow-500 text-xs font-bold mb-4 tracking-widest">
+                PROJECT: LAB_01_VISION
+            </div>
+            <h1 class="text-6xl font-black mb-6 tracking-tighter">
+                视觉感官 <span class="accent-gradient">LAB</span>
+            </h1>
+            <p class="text-xl text-slate-400 max-w-2xl leading-relaxed">
+                论文《Visual Tokenization》深度还原。我们将 1% 的复杂数学，转化为 100% 的直观触感。
+            </p>
+        </header>
+
+        <div class="glass-card rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden">
+            <div class="scan-line"></div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="space-y-2">
+                        <h3 class="text-2xl font-bold text-white">特征提取</h3>
+                        <p class="text-sm text-slate-500 font-mono italic">Feature Extraction Mode</p>
+                    </div>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        点击按钮，模拟多模态 Agent 对图像进行像素级扫描。观察潜空间（Latent Space）中的节点如何被激活并与文本指令对齐。
+                    </p>
+                    <button onclick="startVisualDemo()" class="group relative w-full bg-yellow-500 text-black font-black py-4 px-8 rounded-2xl transition-all hover:bg-yellow-400 hover:shadow-[0_0_30px_rgba(234,179,8,0.4)]">
+                        <span class="relative z-10">激活多模态感知</span>
+                    </button>
+                </div>
+
+                <div class="lg:col-span-2 relative aspect-video bg-black/60 rounded-3xl border border-white/5 overflow-hidden flex items-center justify-center">
+                    <canvas id="visionCanvas" class="w-full h-full"></canvas>
+                    <div id="status-tag" class="absolute top-4 right-4 px-3 py-1 bg-black/50 rounded-lg text-[10px] font-mono border border-white/10 opacity-0 transition-opacity">
+                        SYNCING_TOKENS...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-20 text-center border-t border-slate-800 pt-10">
+            <p class="text-slate-500 text-sm font-mono">
+                "AI 不只是工具，它是我们认知世界的延伸。" <br>
+                <span class="mt-4 block opacity-50 text-xs uppercase tracking-[0.3em]">Built by AI Blogger @PaperLab</span>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('visionCanvas');
+        const ctx = canvas.getContext('2d');
+        let points = [];
+        let active = false;
+
+        function init() {
+            canvas.width = 800;
+            canvas.height = 450;
+            points = [];
+            for(let i=0; i<80; i++) {
+                points.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    active: 0
+                });
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = active ? 'rgba(234, 179, 8, 0.15)' : 'rgba(255, 255, 255, 0.05)';
+            ctx.beginPath();
+            
+            for(let i=0; i<points.length; i++) {
+                let p = points[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                
+                if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                ctx.fillStyle = p.active > 0 ? '#eab308' : '#334155';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.active > 0 ? 3 : 1.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                for(let j=i+1; j<points.length; j++) {
+                    let p2 = points[j];
+                    let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if(dist < 80) {
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                    }
+                }
+            }
+            ctx.stroke();
+            requestAnimationFrame(draw);
+        }
+
+        function startVisualDemo() {
+            active = true;
+            document.getElementById('status-tag').style.opacity = '1';
+            points.forEach(p => {
+                if(Math.random() > 0.5) p.active = 1;
+            });
+            setTimeout(() => {
+                active = false;
+                document.getElementById('status-tag').style.opacity = '0';
+                points.forEach(p => p.active = 0);
+            }, 3000);
+        }
+
+        init();
+        draw();
+    </script>
+</body>
+</html>
